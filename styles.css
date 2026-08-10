@@ -189,38 +189,16 @@ body.is-letter-mode .sky {
   touch-action: none;
 }
 
-.touch-pad {
+.touch-hint {
   display: none;
-  margin-top: 0.85rem;
-}
-
-.touch-row {
-  display: flex;
-  gap: 0.55rem;
-  justify-content: center;
-  align-items: center;
-}
-
-.touch-pad button {
-  min-width: 3.4rem;
-  height: 3.4rem;
-  border: 0;
-  border-radius: 0.9rem;
-  font-size: 1.1rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
   font-weight: 800;
-  color: var(--moss-deep);
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: inset 0 0 0 2px rgba(63, 107, 78, 0.18);
-}
-
-.touch-jump {
-  min-width: 5.5rem !important;
-  color: #fff !important;
-  background: linear-gradient(180deg, var(--clay) 0%, var(--clay-deep) 100%) !important;
+  color: var(--ink-soft);
 }
 
 @media (max-width: 720px), (pointer: coarse) {
-  .touch-pad {
+  .touch-hint {
     display: block;
   }
 

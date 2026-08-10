@@ -40,6 +40,10 @@ export function createGame(canvas, level, hooks) {
   const gravity = 1900;
   const moveSpeed = level.kind === "player" ? 240 : 265;
   const jumpForce = level.kind === "player" ? 720 : 760;
+  const touchPlay =
+    window.matchMedia("(pointer: coarse)").matches ||
+    window.matchMedia("(max-width: 720px)").matches ||
+    "ontouchstart" in window;
   const ground = { x: 0, y: VIEW.GROUND_Y, w: level.worldW, h: VIEW.H - VIEW.GROUND_Y };
   const solids = [ground, ...level.platforms];
 
@@ -544,8 +548,13 @@ export function createGame(canvas, level, hooks) {
     }
 
     let ax = 0;
-    if (wantsLeft()) ax -= 1;
-    if (wantsRight()) ax += 1;
+    if (touchPlay) {
+      // Telefonda otomatik sağa koş, dokunuşla zıpla
+      ax = 1;
+    } else {
+      if (wantsLeft()) ax -= 1;
+      if (wantsRight()) ax += 1;
+    }
     player.vx = ax * moveSpeed;
     if (ax !== 0) player.facing = ax > 0 ? 1 : -1;
 
@@ -662,6 +671,11 @@ export function createGame(canvas, level, hooks) {
     },
     setHold(pressed) {
       holding = pressed;
+      // Mobilde ekrana basmak = zıpla (+ mama sırasında basılı tut)
+      if (touchPlay) {
+        touch.jump = pressed;
+        if (pressed) jumpBuffered = true;
+      }
     },
   };
 }

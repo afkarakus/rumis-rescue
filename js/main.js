@@ -17,7 +17,6 @@ const hudCat = document.getElementById("hud-cat");
 const resultTitle = document.getElementById("result-title");
 const resultText = document.getElementById("result-text");
 const btnNext = document.getElementById("btn-next");
-const touchPad = document.getElementById("touch-pad");
 const letterBody = document.getElementById("letter-body");
 const letterSign = document.getElementById("letter-sign");
 const letterActions = document.getElementById("letter-actions");
@@ -236,19 +235,6 @@ document.getElementById("btn-letter-close")?.addEventListener("click", () => {
   stopMusic();
   document.body.classList.remove("is-letter-mode");
   show("menu");
-});
-
-touchPad?.querySelectorAll("[data-dir]").forEach((btn) => {
-  const dir = btn.getAttribute("data-dir");
-  const set = (pressed) => activeGame?.setTouch(dir, pressed);
-  btn.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    btn.setPointerCapture(e.pointerId);
-    set(true);
-  });
-  btn.addEventListener("pointerup", () => set(false));
-  btn.addEventListener("pointercancel", () => set(false));
-  btn.addEventListener("lostpointercapture", () => set(false));
 });
 
 canvas?.addEventListener("pointerdown", (e) => {

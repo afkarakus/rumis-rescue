@@ -26,7 +26,7 @@
         <div class="actions">
           <button type="button" class="btn btn--primary" id="btn-start">Oyuna başla</button>
         </div>
-        <p class="hint">← → hareket · Space / ↑ zıpla</p>
+        <p class="hint">Bilgisayar: ← → / Space · Telefon: dokunarak zıpla</p>
       </section>
 
       <section class="screen screen--play" id="screen-play" aria-label="Oyun" hidden>
@@ -36,14 +36,8 @@
           <p class="hud-cat" id="hud-cat">Şila</p>
         </header>
         <canvas id="game" width="960" height="540" aria-label="Oyun alanı"></canvas>
-        <p class="play-hint" id="play-hint">Sağa koş, zıpla, karşıdan gelen köpeklerden kaç.</p>
-        <div class="touch-pad" id="touch-pad" aria-hidden="true">
-          <div class="touch-row">
-            <button type="button" data-dir="left" aria-label="Sol">◀</button>
-            <button type="button" data-dir="right" aria-label="Sağ">▶</button>
-            <button type="button" class="touch-jump" data-dir="jump" aria-label="Zıpla">Zıpla</button>
-          </div>
-        </div>
+        <p class="play-hint" id="play-hint">Bilgisayar: ← → ve Space · Telefon: otomatik koş, dokununca zıpla</p>
+        <p class="touch-hint" id="touch-hint">Dokun: zıpla</p>
       </section>
 
       <section class="screen" id="screen-result" aria-label="Sonuç" hidden>
