@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Rumis Rescue — Kedileri köpeklerden kurtar, Rumis'in evine götür." />
-    <title>Rumis Rescue</title>
+    <meta name="description" content="Eve Dönme — Kedileri kurtar, sonra sen de eve dön." />
+    <title>Eve Dönme</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito:wght@500;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -18,51 +18,61 @@
 
     <div id="app">
       <section class="screen screen--active" id="screen-menu" aria-label="Ana menü">
-        <p class="brand">Rumis Rescue</p>
-        <h1 class="headline">Kedileri eve getir</h1>
+        <p class="brand">Eve Dönme</p>
+        <h1 class="headline">Zıpla, kaç, eve ulaş</h1>
         <p class="lead">
-          Her bölümde bir kediyi köpeklerden kurtar ve Rumis'in evine sok.
+          Kedileri köpeklerden kurtarıp Rumis'in evine sok. Son bölümde sıra sende.
         </p>
         <div class="actions">
           <button type="button" class="btn btn--primary" id="btn-start">Oyuna başla</button>
-          <button type="button" class="btn btn--ghost" id="btn-levels">Bölümler</button>
         </div>
-        <p class="hint">Ok tuşları / WASD · mobilde kaydır</p>
-      </section>
-
-      <section class="screen" id="screen-levels" aria-label="Bölüm seçimi" hidden>
-        <p class="brand brand--small">Rumis Rescue</p>
-        <h2 class="headline headline--small">Bölümler</h2>
-        <div class="level-grid" id="level-grid"></div>
-        <button type="button" class="btn btn--ghost" id="btn-levels-back">Geri</button>
+        <p class="hint">← → hareket · Space / ↑ zıpla</p>
       </section>
 
       <section class="screen screen--play" id="screen-play" aria-label="Oyun" hidden>
         <header class="hud">
-          <p class="hud-brand">Rumis Rescue</p>
+          <p class="hud-brand">Eve Dönme</p>
           <p class="hud-level" id="hud-level">Bölüm 1</p>
           <p class="hud-cat" id="hud-cat">Şila</p>
         </header>
         <canvas id="game" width="960" height="540" aria-label="Oyun alanı"></canvas>
-        <p class="play-hint" id="play-hint">Kediyi evin kapısına götür. Köpeklerden uzak dur!</p>
+        <p class="play-hint" id="play-hint">Sağa koş, zıpla, karşıdan gelen köpeklerden kaç.</p>
         <div class="touch-pad" id="touch-pad" aria-hidden="true">
-          <button type="button" data-dir="up" aria-label="Yukarı">▲</button>
-          <div class="touch-mid">
+          <div class="touch-row">
             <button type="button" data-dir="left" aria-label="Sol">◀</button>
             <button type="button" data-dir="right" aria-label="Sağ">▶</button>
+            <button type="button" class="touch-jump" data-dir="jump" aria-label="Zıpla">Zıpla</button>
           </div>
-          <button type="button" data-dir="down" aria-label="Aşağı">▼</button>
         </div>
       </section>
 
       <section class="screen" id="screen-result" aria-label="Sonuç" hidden>
-        <p class="brand brand--small">Rumis Rescue</p>
+        <p class="brand brand--small">Eve Dönme</p>
         <h2 class="headline headline--small" id="result-title">Kurtardın!</h2>
+        <div class="catch-hero" id="catch-hero" hidden>
+          <p class="catch-name" id="catch-name"></p>
+          <div class="catch-photo-wrap">
+            <img id="catch-photo" alt="" />
+          </div>
+          <div class="catch-bubble" id="catch-bubble" role="status"></div>
+        </div>
         <p class="lead" id="result-text"></p>
         <div class="actions">
-          <button type="button" class="btn btn--primary" id="btn-next">Sonraki bölüm</button>
+          <button type="button" class="btn btn--primary" id="btn-next">Devam</button>
           <button type="button" class="btn btn--ghost" id="btn-retry">Tekrar dene</button>
           <button type="button" class="btn btn--ghost" id="btn-menu">Menü</button>
+        </div>
+      </section>
+
+      <section class="screen screen--letter" id="screen-letter" aria-label="Mektup" hidden>
+        <div class="film-fade" aria-hidden="true"></div>
+        <article class="letter" id="letter-card">
+          <p class="letter-seal">Eve Dönme</p>
+          <div class="letter-body" id="letter-body"></div>
+          <p class="letter-sign" id="letter-sign" hidden>Seninim.</p>
+        </article>
+        <div class="actions letter-actions" id="letter-actions" hidden>
+          <button type="button" class="btn btn--primary" id="btn-letter-close">Mektubu kapat</button>
         </div>
       </section>
     </div>

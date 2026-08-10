@@ -1,28 +1,24 @@
-# Rumis Rescue
+# Eve Dönme
 
-Web'de oynanan bölümlü bir oyun: her bölümde bir kediyi köpeklerden kurtarıp **Rumis'in evine** götürürsün.
+Yan kaydırmalı, zıplamalı bir kaçış oyunu.
 
-## Nasıl oynanır
+## Hikâye
 
-- Ok tuşları veya **WASD** ile kediyi hareket ettir
-- Mobilde ekrandaki yön tuşlarını kullan
-- Köpeklerden uzak dur
-- Kapıya ulaşınca bölüm biter
+1–5. bölümlerde kedileri (Şila, Sütlaç, Haşerya, Miniş, Tüylü) köpeklerden kurtarıp Rumis'in evine götürürsün.  
+6. bölümde sıra sende — fotoğrafınla eve dönmeye çalışırsın.
 
-## Bölümler
+## Kontroller
 
-1. Şila  
-2. Sütlaç  
-3. Haşerya  
-4. Miniş  
-5. Tüylü  
+- **← →** / **A D** — hareket
+- **Space** / **↑** / **W** — zıpla
+- Mobilde ekran tuşları
+
+Köpekler **karşıdan** (sağdan) gelir; aşamalı olarak daha sık ve daha hızlı spawn olur.
 
 ## Çalıştırma
-
-Statik bir site — yerel sunucu yeterli:
 
 ```bash
 python3 -m http.server 5173
 ```
 
-Tarayıcıda: http://localhost:5173
+http://localhost:5173

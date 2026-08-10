@@ -1,14 +1,16 @@
-import { LEVELS, loadProgress, saveProgress } from "./levels.js";
+import { LEVELS, saveProgress } from "./levels.js";
 import { createGame } from "./game.js";
+import { stopSpeech } from "./voice.js";
+import { FINAL_LETTER } from "./letter.js";
+import { playMusic, stopMusic } from "./music.js";
 
 const screens = {
   menu: document.getElementById("screen-menu"),
-  levels: document.getElementById("screen-levels"),
   play: document.getElementById("screen-play"),
   result: document.getElementById("screen-result"),
+  letter: document.getElementById("screen-letter"),
 };
 
-const levelGrid = document.getElementById("level-grid");
 const canvas = document.getElementById("game");
 const hudLevel = document.getElementById("hud-level");
 const hudCat = document.getElementById("hud-cat");
@@ -16,11 +18,78 @@ const resultTitle = document.getElementById("result-title");
 const resultText = document.getElementById("result-text");
 const btnNext = document.getElementById("btn-next");
 const touchPad = document.getElementById("touch-pad");
+const letterBody = document.getElementById("letter-body");
+const letterSign = document.getElementById("letter-sign");
+const letterActions = document.getElementById("letter-actions");
+const catchHero = document.getElementById("catch-hero");
+const catchPhoto = document.getElementById("catch-photo");
+const catchBubble = document.getElementById("catch-bubble");
+const catchName = document.getElementById("catch-name");
 
-let progress = loadProgress();
+const CATCH_LINE_CAT =
+  "annecim beni köpeklere yem etmezsin değil mi kurtarırsın beni 🥺";
+const CATCH_LINE_AHMET = "aşkım beni de alır mısın eve 🥺";
+
+function hideCatchPortrait() {
+  if (!catchHero || !catchPhoto) return;
+  catchHero.hidden = true;
+  catchPhoto.removeAttribute("src");
+  catchPhoto.alt = "";
+  if (catchName) catchName.textContent = "";
+  if (catchBubble) catchBubble.textContent = "";
+}
+
+/**
+ * @param {import('./levels.js').LEVELS[number] | undefined} level
+ */
+function showCatchPortrait(level) {
+  if (!catchHero || !catchPhoto || !catchBubble || !level) {
+    hideCatchPortrait();
+    return;
+  }
+
+  const src =
+    level.kind === "player"
+      ? "assets/ahmet.png"
+      : level.photo
+        ? level.photo
+        : "";
+
+  if (!src) {
+    hideCatchPortrait();
+    return;
+  }
+
+  catchPhoto.removeAttribute("src");
+  catchPhoto.alt = level.title;
+  catchPhoto.src = `${src}?v=${level.id}`;
+  if (catchName) catchName.textContent = level.title;
+  catchBubble.textContent =
+    level.kind === "player" ? CATCH_LINE_AHMET : CATCH_LINE_CAT;
+  catchHero.hidden = false;
+}
+
+// Sayfa yenilenince her zaman 1. bölümden başla
+saveProgress(1);
+let progress = { level: 1 };
 let currentLevelId = 1;
 /** @type {ReturnType<typeof createGame> | null} */
 let activeGame = null;
+/** @type {number[]} */
+let letterTimers = [];
+
+const playerImage = new Image();
+playerImage.src = "assets/ahmet.png";
+
+/** @type {Map<string, HTMLImageElement>} */
+const catImages = new Map();
+
+for (const level of LEVELS) {
+  if (!level.photo) continue;
+  const img = new Image();
+  img.src = level.photo;
+  catImages.set(level.photo, img);
+}
 
 function show(name) {
   Object.entries(screens).forEach(([key, el]) => {
@@ -31,18 +100,46 @@ function show(name) {
   });
 }
 
-function renderLevelGrid() {
-  if (!levelGrid) return;
-  levelGrid.innerHTML = "";
-  LEVELS.forEach((level) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "level-card";
-    btn.disabled = level.id > progress.unlocked;
-    btn.innerHTML = `<strong>Bölüm ${level.id}</strong><span>${level.catName} · ${level.dogs} köpek</span>`;
-    btn.addEventListener("click", () => startLevel(level.id));
-    levelGrid.appendChild(btn);
+function clearLetterTimers() {
+  letterTimers.forEach((id) => window.clearTimeout(id));
+  letterTimers = [];
+}
+
+function openFinalLetter() {
+  clearLetterTimers();
+  if (!letterBody || !letterSign || !letterActions) return;
+
+  playMusic("assets/sfx/letter-song.mp3", { loop: true, volume: 0.9 });
+
+  letterBody.innerHTML = "";
+  letterSign.hidden = true;
+  letterActions.hidden = true;
+  document.body.classList.add("is-letter-mode");
+  show("letter");
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  FINAL_LETTER.forEach((text, index) => {
+    const p = document.createElement("p");
+    if (index === 0) p.className = "letter-greeting";
+    p.textContent = text;
+    letterBody.appendChild(p);
+
+    const delay = reduced ? 0 : 700 + index * 1100;
+    const timer = window.setTimeout(() => {
+      p.classList.add("is-visible");
+      if (reduced) p.style.opacity = "1";
+    }, delay);
+    letterTimers.push(timer);
   });
+
+  const endDelay = reduced ? 200 : 700 + FINAL_LETTER.length * 1100 + 400;
+  letterTimers.push(
+    window.setTimeout(() => {
+      letterSign.hidden = false;
+      letterActions.hidden = false;
+    }, endDelay)
+  );
 }
 
 function startLevel(id) {
@@ -51,34 +148,63 @@ function startLevel(id) {
 
   currentLevelId = id;
   activeGame?.stop();
+  stopSpeech();
+  clearLetterTimers();
+  hideCatchPortrait();
+  document.body.classList.remove("is-letter-mode");
+
+  if (level.musicSrc) playMusic(level.musicSrc, { loop: true, volume: 0.88 });
+  else stopMusic();
 
   hudLevel.textContent = `Bölüm ${level.id}`;
-  hudCat.textContent = level.catName;
+  hudCat.textContent = level.kind === "player" ? "Sen · Eve dön" : level.title;
   show("play");
 
-  activeGame = createGame(canvas, level, {
-    onWin: () => finishLevel(true),
-    onLose: () => finishLevel(false),
+  const levelForRun = level;
+  activeGame = createGame(canvas, levelForRun, {
+    onWin: () => finishLevel(true, levelForRun),
+    onLose: () => finishLevel(false, levelForRun),
+    playerImage,
+    catImage: levelForRun.photo ? catImages.get(levelForRun.photo) ?? null : null,
   });
   activeGame.start();
 }
 
-function finishLevel(won) {
+/**
+ * @param {boolean} won
+ * @param {import('./levels.js').LEVELS[number]} [levelOverride]
+ */
+function finishLevel(won, levelOverride) {
   activeGame?.stop();
-  const level = LEVELS.find((l) => l.id === currentLevelId);
+  stopSpeech();
+  const level = levelOverride ?? LEVELS.find((l) => l.id === currentLevelId);
   const hasNext = currentLevelId < LEVELS.length;
 
+  // Fotoğraf yalnızca yakalanma ekranında
+  hideCatchPortrait();
+
   if (won) {
-    const unlocked = Math.max(progress.unlocked, currentLevelId + 1);
-    progress = { unlocked };
-    saveProgress(unlocked);
+    const next = Math.min(LEVELS.length, currentLevelId + 1);
+    progress = { level: hasNext ? next : LEVELS.length };
+    saveProgress(progress.level);
+
+    if (level?.kind === "player") {
+      openFinalLetter();
+      return;
+    }
+
     resultTitle.textContent = "Kurtardın!";
-    resultText.textContent = `${level?.catName ?? "Kedi"} artık Rumis'in evinde güvende.`;
+    resultText.textContent = `${level?.title ?? "Kedi"} artık güvende.`;
     btnNext.hidden = !hasNext;
-    btnNext.textContent = hasNext ? "Sonraki bölüm" : "Tamamlandı";
+    btnNext.textContent = hasNext
+      ? currentLevelId + 1 === LEVELS.length
+        ? "Son bölüm: Eve dön"
+        : "Devam"
+      : "Bitti";
   } else {
     resultTitle.textContent = "Yakalandı!";
-    resultText.textContent = "Köpek kediyi yakaladı. Tekrar dene — eve kadar götür.";
+    resultText.textContent = "";
+    showCatchPortrait(level);
     btnNext.hidden = true;
   }
 
@@ -86,15 +212,8 @@ function finishLevel(won) {
 }
 
 document.getElementById("btn-start")?.addEventListener("click", () => {
-  startLevel(Math.min(progress.unlocked, LEVELS.length));
+  startLevel(progress.level);
 });
-
-document.getElementById("btn-levels")?.addEventListener("click", () => {
-  renderLevelGrid();
-  show("levels");
-});
-
-document.getElementById("btn-levels-back")?.addEventListener("click", () => show("menu"));
 
 document.getElementById("btn-retry")?.addEventListener("click", () => startLevel(currentLevelId));
 
@@ -105,6 +224,17 @@ document.getElementById("btn-next")?.addEventListener("click", () => {
 
 document.getElementById("btn-menu")?.addEventListener("click", () => {
   activeGame?.stop();
+  stopSpeech();
+  stopMusic();
+  clearLetterTimers();
+  document.body.classList.remove("is-letter-mode");
+  show("menu");
+});
+
+document.getElementById("btn-letter-close")?.addEventListener("click", () => {
+  clearLetterTimers();
+  stopMusic();
+  document.body.classList.remove("is-letter-mode");
   show("menu");
 });
 
@@ -118,7 +248,16 @@ touchPad?.querySelectorAll("[data-dir]").forEach((btn) => {
   });
   btn.addEventListener("pointerup", () => set(false));
   btn.addEventListener("pointercancel", () => set(false));
-  btn.addEventListener("pointerleave", () => set(false));
+  btn.addEventListener("lostpointercapture", () => set(false));
 });
+
+canvas?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  canvas.setPointerCapture(e.pointerId);
+  activeGame?.setHold(true);
+});
+canvas?.addEventListener("pointerup", () => activeGame?.setHold(false));
+canvas?.addEventListener("pointercancel", () => activeGame?.setHold(false));
+canvas?.addEventListener("lostpointercapture", () => activeGame?.setHold(false));
 
 show("menu");
