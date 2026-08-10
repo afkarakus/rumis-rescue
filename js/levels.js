@@ -130,7 +130,7 @@ export const LEVELS = [
     color: "#8a7a66",
     kind: "cat",
     worldW: 2200,
-    dogCount: 2,
+    dogCount: 1,
     dogSpeed: 120,
     dogSpawnEvery: 2.8,
     photo: "assets/cats/tuyulu.png",
